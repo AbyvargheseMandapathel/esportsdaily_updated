@@ -8,20 +8,18 @@ const SignInButton = ({ isMobile = false, toggleMenu, isMenuOpen, buttonStyle })
     return (
       <div className="flex items-center">
         {/* Desktop sign in button */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-2">
           <Link
             to="/signup"
-            className="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-purple-900/30 px-5 py-2 text-sm"
+            className="flex items-center justify-center bg-white hover:bg-gray-100 text-black rounded-full font-medium transition-all duration-200 px-5 py-2 text-sm"
           >
-            <FaUserPlus className="mr-2" />
-            Sign Up
+            Sign up
           </Link>
           <Link
             to="/login"
-            className="flex items-center justify-center bg-black hover:bg-gray-800 text-white rounded-md font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-gray-900/30 px-5 py-2 text-sm"
+            className="flex items-center justify-center bg-gray-900 hover:bg-black text-white rounded-full font-medium transition-all duration-200 px-5 py-2 text-sm"
           >
-            <FaSignInAlt className="mr-2" />
-            Sign In
+            Log in
           </Link>
         </div>
         
@@ -50,16 +48,15 @@ const SignInButton = ({ isMobile = false, toggleMenu, isMenuOpen, buttonStyle })
         to="/signup"
         className={`flex items-center justify-center ${
           buttonStyle === 'black' 
-            ? 'bg-black hover:bg-gray-800 text-white hover:shadow-gray-900/30' 
-            : 'bg-purple-600 hover:bg-purple-700 text-white hover:shadow-purple-900/30'
-        } rounded-md font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+            ? 'bg-gray-900 hover:bg-black text-white' 
+            : 'bg-white hover:bg-gray-100 text-black'
+        } rounded-full font-medium transition-all duration-200 ${
           isMobile === true
             ? 'w-full px-6 py-3 text-lg' 
             : 'px-5 py-2 text-sm'
         }`}
       >
-        <FaUserPlus className="mr-2" />
-        Sign Up
+        {buttonStyle === 'black' ? 'Log in' : 'Sign up'}
       </Link>
     );
   }
@@ -69,17 +66,16 @@ const SignInButton = ({ isMobile = false, toggleMenu, isMenuOpen, buttonStyle })
     <Link
       to="/login"
       className={`flex items-center justify-center ${
-        buttonStyle === 'purple' 
-          ? 'bg-purple-600 hover:bg-purple-700 text-white hover:shadow-purple-900/30' 
-          : 'bg-black hover:bg-gray-800 text-white hover:shadow-gray-900/30'
-      } rounded-md font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+        buttonStyle === 'white' 
+          ? 'bg-white hover:bg-gray-100 text-black' 
+          : 'bg-gray-900 hover:bg-black text-white'
+      } rounded-full font-medium transition-all duration-200 ${
         isMobile === true
           ? 'w-full px-6 py-3 text-lg' 
           : 'px-5 py-2 text-sm'
       }`}
     >
-      <FaSignInAlt className="mr-2" />
-      Sign In
+      {buttonStyle === 'white' ? 'Sign up' : 'Log in'}
     </Link>
   );
 };

@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 
 const Logo = () => (
   <Link to="/" className="text-xl font-bold">
-    <span className="text-purple-500">e</span>
-    <span className="text-purple-800">Sports</span>
-    <span className="text-purple-500"> Daily</span>
+    <span className="text-blue-400">e</span>
+    <span className="text-indigo-600">Sports</span>
+    <span className="text-blue-400"> Daily</span>
   </Link>
 );
 
