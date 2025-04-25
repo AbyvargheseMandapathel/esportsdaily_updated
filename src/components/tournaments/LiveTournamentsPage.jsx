@@ -15,52 +15,95 @@ function LiveTournamentsPage() {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [matches, setMatches] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false); // This would be determined by auth state in a real app
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [teams, setTeams] = useState([]);
+  const [scores, setScores] = useState([]);
   const teamsPerPage = 8;
   const navigate = useNavigate();
 
+  // Fetch teams and scores from API
   useEffect(() => {
-    const fetchLiveTournaments = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
       
       try {
-        // Simulate API call - replace with actual API call
-        const response = await new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({
-              tournaments: [
-                {
-                  id: "live1",
-                  title: "BGMI Pro League Season 5",
-                  game: "BGMI",
-                  status: "LIVE",
-                  image: "https://placehold.co/1200x400/3b0764/e9d5ff?text=BGMI+Pro+League",
-                  logo: "https://placehold.co/200/3b0764/e9d5ff?text=BGMI",
-                  teams: [
-                    { rank: 1, name: "TROY", group: "GROUP A", matches: 12, positionPts: 65, finishPts: 48, totalPts: 113, logo: "https://placehold.co/50/3b0764/e9d5ff?text=TROY" },
-                    { rank: 2, name: "EGGY", group: "GROUP B", matches: 12, positionPts: 58, finishPts: 52, totalPts: 110, logo: "https://placehold.co/50/3b0764/e9d5ff?text=EGGY" },
-                    // ... other teams
-                  ]
-                },
-                // ... other tournaments
-              ]
-            });
-          }, 1000);
-        });
+        // Fetch teams
+        const teamsResponse = await fetch('http://127.0.0.1:8000/teams/');
+        if (!teamsResponse.ok) {
+          throw new Error('Failed to fetch teams');
+        }
+        const teamsData = await teamsResponse.json();
+        setTeams(teamsData);
         
-        setLiveTournaments(response.tournaments);
-        if (response.tournaments.length > 0) {
-          setSelectedTournament(response.tournaments[0]);
+        // Fetch scores
+        const scoresResponse = await fetch('http://127.0.0.1:8000/scores/');
+        if (!scoresResponse.ok) {
+          throw new Error('Failed to fetch scores');
+        }
+        const scoresData = await scoresResponse.json();
+        setScores(scoresData);
+        
+        // Process data to create tournament with teams and their scores
+        if (teamsData.length > 0) {
+          // Create tournament teams with scores
+          const tournamentTeams = teamsData.map(team => {
+            // Find all scores for this team
+            const teamScores = scoresData.filter(score => score.team === team.id);
+            
+            // Calculate total points
+            const totalPositionPts = teamScores.reduce((sum, score) => sum + score.placement_points, 0);
+            const totalFinishPts = teamScores.reduce((sum, score) => sum + score.kill_points, 0);
+            const totalPts = teamScores.reduce((sum, score) => sum + score.total_points, 0);
+            
+            return {
+              id: team.id,
+              rank: 0, // Will be calculated later
+              name: team.name,
+              group: "GROUP A", // Default group
+              matches: teamScores.length,
+              positionPts: totalPositionPts,
+              finishPts: totalFinishPts,
+              totalPts: totalPts,
+              logo: team.logo_url
+            };
+          });
+          
+          // Sort teams by total points and assign ranks
+          tournamentTeams.sort((a, b) => b.totalPts - a.totalPts);
+          tournamentTeams.forEach((team, index) => {
+            team.rank = index + 1;
+          });
+          
+          // Create tournament object
+          const tournamentData = {
+            tournaments: [
+              {
+                id: "live1",
+                title: "BGMI Pro League Season 5",
+                game: "BGMI",
+                status: "LIVE",
+                image: "https://placehold.co/1200x400/3b0764/e9d5ff?text=BGMI+Pro+League",
+                logo: "https://placehold.co/200/3b0764/e9d5ff?text=BGMI",
+                teams: tournamentTeams
+              }
+            ]
+          };
+          
+          setLiveTournaments(tournamentData.tournaments);
+          if (tournamentData.tournaments.length > 0) {
+            setSelectedTournament(tournamentData.tournaments[0]);
+          }
         }
       } catch (err) {
-        setError(err.message || "Failed to load live tournaments");
+        setError(err.message || "Failed to load tournament data");
+        console.error("Error loading data:", err);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchLiveTournaments();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -112,8 +155,6 @@ function LiveTournamentsPage() {
 
   // New function to handle admin access
   const handleAdminAccess = () => {
-    // In a real app, this would check authentication or redirect to login
-    // For now, we'll just toggle the admin state for demonstration
     setIsAdmin(!isAdmin);
   };
 
@@ -129,33 +170,6 @@ function LiveTournamentsPage() {
           <FaCircle className="text-red-500 animate-pulse mr-2" />
           Live Tournaments
         </h1>
-        
-        {/* Admin controls - only show Add New Match button if admin */}
-        {/*<div className="flex space-x-3">
-          <button
-            onClick={handleAdminAccess}
-            className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center transition-colors"
-          >
-            <FaLock className="mr-2" /> {isAdmin ? "Exit Admin" : "Admin Access"}
-          </button>
-          
-          {isAdmin && (
-            <>
-              <Link 
-                to="/match/new/score" 
-                className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg flex items-center transition-colors"
-              >
-                <FaPlus className="mr-2" /> Add New Match
-              </Link>
-              <button
-                onClick={goToAdminMatchManagement}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg flex items-center transition-colors"
-              >
-                <FaEdit className="mr-2" /> Manage Matches
-              </button>
-            </>
-          )}
-         </div> */}
       </div>
 
       {liveTournaments.length === 0 ? (
@@ -177,34 +191,6 @@ function LiveTournamentsPage() {
             <>
               <TournamentHeader tournament={selectedTournament} />
               
-              {/* Match List Section - Remove edit links for public view */}
-              {/* <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg mb-6 border border-gray-700">
-                <div className="p-6 border-b border-gray-700">
-                  <h2 className="text-xl font-bold text-white">Tournament Matches</h2>
-                </div>
-                
-                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {matches.length === 0 ? (
-                    <div className="col-span-3 text-center py-4 text-gray-400">
-                      No matches available for this tournament.
-                    </div>
-                  ) : (
-                    matches.map(match => (
-                      <div key={match.id} className="bg-gray-700/50 rounded-lg p-4 border border-gray-600 hover:bg-gray-700/70 transition-all">
-                        <div className="flex justify-between items-center mb-2">
-                          <h3 className="text-white font-medium">{match.name}</h3>
-                          <span className="text-gray-400 text-sm">{match.date}</span>
-                        </div>
-                        <div className="text-gray-400 text-sm mb-3">
-                          Map: {match.map}
-                        </div>
-                        {/* Edit link removed from public view 
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div> */}
-              
               <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg mb-6">
                 <PointsTable teams={currentTeams} />
                 
@@ -222,7 +208,6 @@ function LiveTournamentsPage() {
         </>
       )}
       
-      {/* Admin Panel - Only visible when in admin mode */}
       {isAdmin && (
         <div className="mt-8 bg-gray-800/80 border border-purple-500/30 rounded-lg p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4">
