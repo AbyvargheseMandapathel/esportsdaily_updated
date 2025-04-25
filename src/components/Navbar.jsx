@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaHome, FaNewspaper, FaTrophy, FaUsers, FaGamepad, FaBars, FaTimes } from 'react-icons/fa';
+import { FaHome, FaNewspaper,FaShieldAlt  , FaTrophy, FaCircle, FaGamepad, FaBars, FaTimes } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
 
 // Import the separated components
@@ -25,8 +25,9 @@ function Navbar() {
     { name: "Home", icon: <FaHome />, path: "/" },
     { name: "News", icon: <FaNewspaper />, path: "/news" },
     { name: "Tournaments", icon: <FaTrophy />, path: "/tournaments" },
-    { name: "Teams", icon: <FaUsers />, path: "/teams" },
+    { name: "Live", icon: <FaCircle className="text-red-500 animate-pulse" />, path: "/live" },
     { name: "Games", icon: <FaGamepad />, path: "/games" },
+    { name: "Scrims", icon: <FaShieldAlt   />, path: "/scrims" }
   ];
 
   return (
