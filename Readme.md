@@ -1,6 +1,11 @@
+# Updating the README.md with Tournament-Specific Endpoints
+
+I'll update your README.md to include tournament-specific endpoints that allow you to access tournament details and related data through URL parameters.
+
+```markdown:c:\Users\ABY\Desktop\project\esportsdailybackend\Readme.md
 # API Documentation for Esports Daily Backend
 
-Here's a comprehensive documentation of all the API endpoints available in your project, including sample payloads and HTTP requests.
+This documentation covers all API endpoints available in the Esports Daily Backend, including sample payloads and HTTP requests.
 
 ## Base URL
 
@@ -118,6 +123,12 @@ GET /api/organizers/
 ]
 ```
 
+#### Get a specific organizer
+
+```
+GET /api/organizers/{id}/
+```
+
 #### Create a new organizer
 
 ```
@@ -155,6 +166,12 @@ GET /api/teams/
     "logo_url": "https://example.com/fnatic.png"
   }
 ]
+```
+
+#### Get a specific team
+
+```
+GET /api/teams/{id}/
 ```
 
 #### Create a new team
@@ -195,6 +212,12 @@ GET /api/players/
     "jersey_number": 1
   }
 ]
+```
+
+#### Get a specific player
+
+```
+GET /api/players/{id}/
 ```
 
 #### Create a new player
@@ -244,6 +267,147 @@ GET /api/tournaments/
     "discord_link": "https://discord.gg/PMGC"
   }
 ]
+```
+
+#### Get a specific tournament
+
+```
+GET /api/tournaments/{id}/
+```
+
+#### Get schedules for a specific tournament
+
+```
+GET /api/tournaments/{id}/schedules/
+```
+
+**Sample Response:**
+```json
+[
+  {
+    "id": 1,
+    "tournament": 1,
+    "stage": "Group Stage",
+    "start_date": "2023-11-10T10:00:00Z",
+    "end_date": "2023-11-20T18:00:00Z",
+    "detail": "16 teams compete in a round-robin format",
+    "number_of_matches": 24
+  },
+  {
+    "id": 2,
+    "tournament": 1,
+    "stage": "Semifinals",
+    "start_date": "2023-11-25T12:00:00Z",
+    "end_date": "2023-11-26T20:00:00Z",
+    "detail": "Top 8 teams compete in a single elimination bracket",
+    "number_of_matches": 4
+  }
+]
+```
+
+#### Get matches for a specific tournament
+
+```
+GET /api/tournaments/{id}/matches/
+```
+
+**Sample Response:**
+```json
+[
+  {
+    "id": 1,
+    "tournament": 1,
+    "schedule": 1,
+    "map": "erangel",
+    "live_link": "https://twitch.tv/PMGC/match1",
+    "status": "completed"
+  },
+  {
+    "id": 2,
+    "tournament": 1,
+    "schedule": 1,
+    "map": "miramar",
+    "live_link": "https://twitch.tv/PMGC/match2",
+    "status": "not_started"
+  }
+]
+```
+
+#### Get teams for a specific tournament
+
+```
+GET /api/tournaments/{id}/teams/
+```
+
+**Sample Response:**
+```json
+[
+  {
+    "id": 1,
+    "name": "Team Liquid",
+    "logo_url": "https://example.com/teamliquid.png"
+  },
+  {
+    "id": 2,
+    "name": "Fnatic",
+    "logo_url": "https://example.com/fnatic.png"
+  }
+]
+```
+
+#### Get standings for a specific tournament
+
+```
+GET /api/tournaments/{id}/standings/
+```
+
+**Sample Response:**
+```json
+[
+  {
+    "id": 1,
+    "tournament": 1,
+    "team": 1,
+    "day": "Day 1",
+    "total_matches": 5,
+    "position_points": "45.00",
+    "kill_points": "38.00",
+    "bonus_points": "5.00",
+    "total_points": "88.00",
+    "wwcd_count": 2,
+    "penalties": "0.00",
+    "final_rank": 1,
+    "updated_at": "2023-11-15T18:30:00Z"
+  },
+  {
+    "id": 2,
+    "tournament": 1,
+    "team": 2,
+    "day": "Day 1",
+    "total_matches": 5,
+    "position_points": "32.00",
+    "kill_points": "42.00",
+    "bonus_points": "0.00",
+    "total_points": "74.00",
+    "wwcd_count": 1,
+    "penalties": "0.00",
+    "final_rank": 2,
+    "updated_at": "2023-11-15T18:30:00Z"
+  }
+]
+```
+
+#### Add a team to a tournament
+
+```
+POST /api/tournaments/{id}/add_team/
+```
+
+**Sample Payload:**
+```json
+{
+  "team_id": 3
+}
 ```
 
 #### Create a new tournament
@@ -307,6 +471,55 @@ GET /api/schedules/
 ]
 ```
 
+#### Get a specific schedule
+
+```
+GET /api/schedules/{id}/
+```
+
+#### Get matches for a specific schedule
+
+```
+GET /api/schedules/{id}/matches/
+```
+
+**Sample Response:**
+```json
+[
+  {
+    "id": 1,
+    "tournament": 1,
+    "schedule": 1,
+    "map": "erangel",
+    "live_link": "https://twitch.tv/PMGC/match1",
+    "status": "completed"
+  },
+  {
+    "id": 2,
+    "tournament": 1,
+    "schedule": 1,
+    "map": "miramar",
+    "live_link": "https://twitch.tv/PMGC/match2",
+    "status": "not_started"
+  }
+]
+```
+
+#### Add a match to a schedule
+
+```
+POST /api/schedules/{id}/add_match/
+```
+
+**Sample Payload:**
+```json
+{
+  "map": "erangel",
+  "live_link": "https://twitch.tv/match",
+  "status": "not_started"
+}
+```
+
 #### Create a new schedule
 
 ```
@@ -353,6 +566,64 @@ GET /api/matches/
     "status": "not_started"
   }
 ]
+```
+
+#### Get a specific match
+
+```
+GET /api/matches/{id}/
+```
+
+#### Get scores for a specific match
+
+```
+GET /api/matches/{id}/scores/
+```
+
+**Sample Response:**
+```json
+[
+  {
+    "id": 1,
+    "match": 1,
+    "team": 1,
+    "position_points": "12.00",
+    "kill_points": "15.00",
+    "bonus_points": "0.00",
+    "total_points": "27.00",
+    "rank": 1,
+    "wwcd": true
+  },
+  {
+    "id": 2,
+    "match": 1,
+    "team": 2,
+    "position_points": "8.00",
+    "kill_points": "10.00",
+    "bonus_points": "0.00",
+    "total_points": "18.00",
+    "rank": 2,
+    "wwcd": false
+  }
+]
+```
+
+#### Add a score to a match
+
+```
+POST /api/matches/{id}/add_score/
+```
+
+**Sample Payload:**
+```json
+{
+  "team": 1,
+  "position_points": "10.00",
+  "kill_points": "8.00",
+  "bonus_points": "2.00",
+  "rank": 2,
+  "wwcd": false
+}
 ```
 
 #### Create a new match
@@ -406,6 +677,12 @@ GET /api/scores/
     "wwcd": false
   }
 ]
+```
+
+#### Get a specific score
+
+```
+GET /api/scores/{id}/
 ```
 
 #### Create a new score
@@ -471,37 +748,63 @@ GET /api/standings/
 ]
 ```
 
+#### Get a specific standing
+
+```
+GET /api/standings/{id}/
+```
+
 ## Making HTTP Requests
 
 ### Using cURL
 
 ```bash
-# Get all tournaments
-curl -X GET http://localhost:8000/api/tournaments/
+# Get a specific tournament
+curl -X GET http://localhost:8000/api/tournaments/1/
 
-# Create a new team
-curl -X POST http://localhost:8000/api/teams/ \
+# Get all matches for a tournament
+curl -X GET http://localhost:8000/api/tournaments/1/matches/
+
+# Add a team to a tournament
+curl -X POST http://localhost:8000/api/tournaments/1/add_team/ \
   -H "Content-Type: application/json" \
-  -d '{"name": "NaVi", "logo_url": "https://example.com/navi.png"}'
+  -d '{"team_id": 3}'
+
+# Add a score to a match
+curl -X POST http://localhost:8000/api/matches/1/add_score/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "team": 1,
+    "position_points": "10.00",
+    "kill_points": "8.00",
+    "bonus_points": "2.00",
+    "rank": 2,
+    "wwcd": false
+  }'
 ```
 
 ### Using JavaScript (Fetch API)
 
 ```javascript
-// Get all matches
-fetch('http://localhost:8000/api/matches/')
+// Get a specific tournament
+fetch('http://localhost:8000/api/tournaments/1/')
   .then(response => response.json())
   .then(data => console.log(data))
   .catch(error => console.error('Error:', error));
 
-// Create a new score
-fetch('http://localhost:8000/api/scores/', {
+// Get standings for a tournament
+fetch('http://localhost:8000/api/tournaments/1/standings/')
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+
+// Add a score to a match
+fetch('http://localhost:8000/api/matches/3/add_score/', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    "match": 3,
     "team": 2,
     "position_points": "6.00",
     "kill_points": "12.00",
@@ -521,20 +824,25 @@ fetch('http://localhost:8000/api/scores/', {
 import requests
 import json
 
-# Get all teams
-response = requests.get('http://localhost:8000/api/teams/')
-teams = response.json()
-print(teams)
+# Get a specific tournament
+response = requests.get('http://localhost:8000/api/tournaments/1/')
+tournament = response.json()
+print(tournament)
 
-# Create a new player
-player_data = {
-    "name": "TenZ",
-    "team": 3,
-    "jersey_number": 5
+# Get matches for a tournament
+response = requests.get('http://localhost:8000/api/tournaments/1/matches/')
+matches = response.json()
+print(matches)
+
+# Add a match to a schedule
+match_data = {
+    "map": "vikendi",
+    "live_link": "https://twitch.tv/match_new",
+    "status": "not_started"
 }
 response = requests.post(
-    'http://localhost:8000/api/players/',
-    data=json.dumps(player_data),
+    'http://localhost:8000/api/schedules/2/add_match/',
+    data=json.dumps(match_data),
     headers={'Content-Type': 'application/json'}
 )
 print(response.json())
@@ -545,5 +853,5 @@ print(response.json())
 - The Overall Standings are automatically calculated when scores are added, updated, or deleted.
 - All decimal fields (like points) should be sent as strings in JSON.
 - For creating related objects, use the ID of the related object.
-
-
+- When adding scores or matches through the nested endpoints, you don't need to specify the parent object ID (tournament or match) as it's taken from the URL.
+```
