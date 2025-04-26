@@ -100,7 +100,7 @@ class Match(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
 
     def __str__(self):
-        return f"{self.tournament.name} - {self.schedule.stage} - {self.get_map_display()} Match"
+        return f"{self.tournament.name} - {self.schedule.stage} - {self.get_map_display()}-{self.id} "
 
     
 class Score(models.Model):
@@ -110,7 +110,7 @@ class Score(models.Model):
     kill_points = models.IntegerField(default=0)
     bonus_points = models.IntegerField(default=0)
     total_points = models.IntegerField(default=0)  # Stored in DB for filtering/sorting
-    rank = models.IntegerField()
+    # rank = models.IntegerField()
     wwcd = models.BooleanField(default=False)  # Winner Winner Chicken Dinner (1st place)
     is_live_update = models.BooleanField(default=True)  # True for live updates, False for official results
     

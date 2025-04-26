@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status  # Added status import here
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -86,7 +86,7 @@ class MatchViewSet(viewsets.ModelViewSet):
     def scores(self, request, pk=None):
         """Get all scores for a specific match"""
         match = self.get_object()
-        scores = Score.objects.filter(match=match).order_by('rank')
+        scores = Score.objects.filter(match=match)
         serializer = ScoreSerializer(scores, many=True)
         return Response(serializer.data)
     
@@ -107,33 +107,74 @@ class MatchViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def add_live_score(self, request, pk=None):
-        """Add a live score update for a team in this match"""
         match = self.get_object()
         
-        # Add match_id to the data
-        score_data = request.data.copy()
-        score_data['match'] = match.id
-        score_data['is_live_update'] = True
-        
-        # Check if there's already a live score for this team in this match
-        team_id = score_data.get('team')
-        existing_score = Score.objects.filter(
-            match=match,
-            team=team_id,
-            is_live_update=True
-        ).first()
-        
-        if existing_score:
-            # Update existing score
-            serializer = ScoreSerializer(existing_score, data=score_data)
+        # Check if we're receiving a single score or multiple scores
+        if isinstance(request.data, list):
+            # Handle multiple scores
+            results = []
+            for score_data in request.data:
+                team_id = score_data.get('team')
+                
+                # Check if a live score already exists for this team in this match
+                existing_score = Score.objects.filter(
+                    match=match,
+                    team_id=team_id,
+                    is_live_update=True
+                ).first()
+                
+                if existing_score:
+                    # Update existing score
+                    serializer = ScoreSerializer(existing_score, data={
+                        **score_data,
+                        'match': match.id,
+                        'is_live_update': True
+                    }, partial=True)
+                else:
+                    # Create new score
+                    serializer = ScoreSerializer(data={
+                        **score_data,
+                        'match': match.id,
+                        'is_live_update': True
+                    })
+                
+                if serializer.is_valid():
+                    serializer.save()
+                    results.append(serializer.data)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            return Response(results, status=status.HTTP_201_CREATED)
         else:
-            # Create new score
-            serializer = ScoreSerializer(data=score_data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # Handle single score (existing logic)
+            team_id = request.data.get('team')
+            
+            # Check if a live score already exists for this team in this match
+            existing_score = Score.objects.filter(
+                match=match,
+                team_id=team_id,
+                is_live_update=True
+            ).first()
+            
+            if existing_score:
+                # Update existing score
+                serializer = ScoreSerializer(existing_score, data={
+                    **request.data,
+                    'match': match.id,
+                    'is_live_update': True
+                }, partial=True)
+            else:
+                # Create new score
+                serializer = ScoreSerializer(data={
+                    **request.data,
+                    'match': match.id,
+                    'is_live_update': True
+                })
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=True, methods=['post'])
     def submit_final_standings(self, request, pk=None):

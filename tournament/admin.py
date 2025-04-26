@@ -48,7 +48,7 @@ class MatchAdmin(admin.ModelAdmin):
 
 @admin.register(Score)
 class ScoreAdmin(admin.ModelAdmin):
-    list_display = ('match', 'team', 'position_points', 'kill_points', 'bonus_points', 'total_points', 'rank', 'wwcd')
+    list_display = ('match', 'team', 'position_points', 'kill_points', 'bonus_points', 'total_points', 'wwcd')
     list_filter = ('match__tournament', 'team', 'wwcd')
     search_fields = ('team__name', 'match__tournament__name')
 
