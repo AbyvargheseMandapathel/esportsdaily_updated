@@ -15,43 +15,53 @@ pg_conn = psycopg2.connect(
 )
 pg_cursor = pg_conn.cursor()
 
-# --- Fetch all table names from SQLite ---
-sqlite_cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-tables = [row[0] for row in sqlite_cursor.fetchall()]
+# Set the table we want to transfer
+table = 'tournament_score'
+print(f"Transferring table: {table}")
 
-print(f"Tables found: {tables}")
+# Fetch all data from SQLite for the `tournament_score` table
+sqlite_cursor.execute(f"SELECT * FROM {table}")
+rows = sqlite_cursor.fetchall()
 
-for table in tables:
-    if table == 'django_migrations':  # (optional) skip if you want
-        continue
+# Get column names for `tournament_score`
+sqlite_cursor.execute(f"PRAGMA table_info({table})")
+columns = [info[1] for info in sqlite_cursor.fetchall()]
 
-    print(f"Transferring table: {table}")
+# Exclude the 'id' column from the insert statement if it's auto-incremented
+if 'id' in columns:
+    columns.remove('id')
 
-    # Fetch all data from SQLite
-    sqlite_cursor.execute(f"SELECT * FROM {table}")
-    rows = sqlite_cursor.fetchall()
+# Prepare the column names and placeholders for the insert query
+columns_list = ', '.join(columns)
+placeholders = ', '.join(['%s'] * len(columns))
 
-    # Get column names
-    sqlite_cursor.execute(f"PRAGMA table_info({table})")
-    columns = [info[1] for info in sqlite_cursor.fetchall()]
-    columns_list = ', '.join(columns)
-    placeholders = ', '.join(['%s'] * len(columns))
+# Debug: Print the first 5 rows to check for column mismatch
+for row in rows[:5]:  # Print the first 5 rows for inspection
+    print(f"Row: {row}, Expected columns: {len(columns)}, Found values: {len(row)}")
 
-    # Insert data into Postgres
-    for row in rows:
-        try:
-            pg_cursor.execute(
-                f"INSERT INTO {table} ({columns_list}) VALUES ({placeholders})",
-                row
+# Bulk insert data into PostgreSQL
+try:
+    # Convert 'wwcd' column from integer to boolean if needed
+    for i in range(len(rows)):
+        # Convert integer to boolean for 'wwcd' column, if it exists
+        if 'wwcd' in columns:
+            wwcd_index = columns.index('wwcd')
+            rows[i] = (
+                *rows[i][:wwcd_index],
+                bool(rows[i][wwcd_index]),
+                *rows[i][wwcd_index + 1:]
             )
-        except Exception as e:
-            print(f"❌ Error inserting into {table}: {e}")
 
+    # Insert rows into PostgreSQL
+    pg_cursor.executemany(
+        f"INSERT INTO {table} ({columns_list}) VALUES ({placeholders})", rows
+    )
     pg_conn.commit()
-    print(f"✅ Finished transferring {table}")
+    print("🎉 Tournament score table transferred successfully!")
+except Exception as e:
+    print(f"❌ Error inserting into tournament_score: {e}")
+    pg_conn.rollback()
 
-# Close connections
+# Close the connections
 sqlite_conn.close()
 pg_conn.close()
-
-print("🎉 ALL TABLES transferred successfully!")
