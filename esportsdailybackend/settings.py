@@ -56,7 +56,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://esportsdailyindia.com",
-    "https://zingy-khapse-2c0a43.netlify.app"
+    "https://zingy-khapse-2c0a43.netlify.app/"
 ]
 
 ROOT_URLCONF = 'esportsdailybackend.urls'
