@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-x_k5siue()^r82f+m4h((29__e@g5j!ri^53r6%!tl^19h#_80'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["https://esportsdailyapi-techinsightsdaily1980-y1k8qkzd.leapcell.dev","https://esportsdailyapi-techinsightsdaily1980-y1k8qkzd.leapcell.dev/"]
+ALLOWED_HOSTS = ["https://esportsdailyapi-techinsightsdaily1980-y1k8qkzd.leapcell.dev","https://esportsdailyapi-techinsightsdaily1980-y1k8qkzd.leapcell.dev/","localhost"]
 
 
 # Application definition
@@ -56,7 +56,6 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://esportsdailyindia.com",
-    "https://zingy-khapse-2c0a43.netlify.app/",
     "https://zingy-khapse-2c0a43.netlify.app"
 ]
 
