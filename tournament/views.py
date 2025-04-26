@@ -8,6 +8,7 @@ from .serializers import (
     TournamentSerializer, ScheduleSerializer, MatchSerializer, ScoreSerializer,
     OverallStandingSerializer
 )
+from .services import process_final_standings
 
 class GameViewSet(viewsets.ModelViewSet):
     queryset = Game.objects.all()
@@ -103,6 +104,51 @@ class MatchViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['post'])
+    def add_live_score(self, request, pk=None):
+        """Add a live score update for a team in this match"""
+        match = self.get_object()
+        
+        # Add match_id to the data
+        score_data = request.data.copy()
+        score_data['match'] = match.id
+        score_data['is_live_update'] = True
+        
+        # Check if there's already a live score for this team in this match
+        team_id = score_data.get('team')
+        existing_score = Score.objects.filter(
+            match=match,
+            team=team_id,
+            is_live_update=True
+        ).first()
+        
+        if existing_score:
+            # Update existing score
+            serializer = ScoreSerializer(existing_score, data=score_data)
+        else:
+            # Create new score
+            serializer = ScoreSerializer(data=score_data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['post'])
+    def submit_final_standings(self, request, pk=None):
+        """Submit final standings for a match"""
+        match = self.get_object()
+        tournament_id = match.tournament.id
+        
+        # Process the final standings data
+        final_standings_data = request.data.get('standings', [])
+        success = process_final_standings(tournament_id, match.id, final_standings_data)
+        
+        if success:
+            return Response({"message": "Final standings processed successfully"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Failed to process final standings"}, status=status.HTTP_400_BAD_REQUEST)
 
 class ScheduleViewSet(viewsets.ModelViewSet):
     queryset = Schedule.objects.all()

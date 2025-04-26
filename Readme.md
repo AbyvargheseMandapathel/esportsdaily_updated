@@ -587,7 +587,8 @@ GET /api/matches/{id}/scores/
     "bonus_points": "0.00",
     "total_points": "27.00",
     "rank": 1,
-    "wwcd": true
+    "wwcd": true,
+    "is_live_update": false
   },
   {
     "id": 2,
@@ -598,7 +599,8 @@ GET /api/matches/{id}/scores/
     "bonus_points": "0.00",
     "total_points": "18.00",
     "rank": 2,
-    "wwcd": false
+    "wwcd": false,
+    "is_live_update": false
   }
 ]
 ```
@@ -613,13 +615,77 @@ POST /api/matches/{id}/add_score/
 ```json
 {
   "team": 1,
-  "position_points": "10.00",
-  "kill_points": "8.00",
-  "bonus_points": "2.00",
+  "position_points": 10,
+  "kill_points": 8,
+  "bonus_points": 2,
   "rank": 2,
   "wwcd": false
 }
 ```
+
+#### Add a live score update to a match
+
+```
+POST /api/matches/{id}/add_live_score/
+```
+
+**Sample Payload:**
+```json
+{
+  "team": 1,
+  "position_points": 10,
+  "kill_points": 8,
+  "bonus_points": 2,
+  "rank": 2,
+  "wwcd": false
+}
+```
+
+**Description:**
+This endpoint allows you to add or update live scores during a match. If a live score already exists for the team in this match, it will be updated. These scores are marked as live updates and will be replaced when final standings are submitted.
+
+#### Submit final standings for a match
+
+```
+POST /api/matches/{id}/submit_final_standings/
+```
+
+**Sample Payload:**
+```json
+{
+  "standings": [
+    {
+      "team_id": 1,
+      "position_points": 120,
+      "kill_points": 85,
+      "bonus_points": 10,
+      "total_points": 215,
+      "wwcd_count": 3,
+      "total_matches": 12,
+      "rank": 1
+    },
+    {
+      "team_id": 2,
+      "position_points": 95,
+      "kill_points": 92,
+      "bonus_points": 5,
+      "total_points": 192,
+      "wwcd_count": 2,
+      "total_matches": 12,
+      "rank": 2
+    }
+  ]
+}
+```
+
+**Description:**
+This endpoint allows you to submit the final standings after a match is completed. The system will:
+1. Remove any live updates for this match
+2. Calculate the difference between the new standings and previous standings
+3. Create official score entries based on these differences
+4. Update the overall standings accordingly
+
+This ensures that while you can provide live updates during a match, the final standings will always be accurate based on the official results.
 
 #### Create a new match
 
@@ -658,7 +724,8 @@ GET /api/scores/
     "bonus_points": "0.00",
     "total_points": "27.00",
     "rank": 1,
-    "wwcd": true
+    "wwcd": true,
+    "is_live_update": false
   },
   {
     "id": 2,
@@ -669,7 +736,8 @@ GET /api/scores/
     "bonus_points": "0.00",
     "total_points": "18.00",
     "rank": 2,
-    "wwcd": false
+    "wwcd": false,
+    "is_live_update": false
   }
 ]
 ```
@@ -691,11 +759,12 @@ POST /api/scores/
 {
   "match": 2,
   "team": 1,
-  "position_points": "10.00",
-  "kill_points": "8.00",
-  "bonus_points": "2.00",
+  "position_points": 10,
+  "kill_points": 8,
+  "bonus_points": 2,
   "rank": 2,
-  "wwcd": false
+  "wwcd": false,
+  "is_live_update": false
 }
 ```
 
@@ -749,6 +818,28 @@ GET /api/standings/
 GET /api/standings/{id}/
 ```
 
+## Real-Time Match Updates and Final Post-Match Corrections
+
+The API supports both real-time match updates and final post-match corrections for team standings:
+
+### Live Updates During Matches
+
+During a match, you can use the `/api/matches/{id}/add_live_score/` endpoint to provide real-time score updates. These updates:
+- Are marked as `is_live_update=true`
+- Will update the overall standings in real-time
+- Can be updated multiple times as the match progresses
+- Will be visible to users immediately
+
+### Final Standings After Matches
+
+Once a match is officially over, you can submit the final standings using the `/api/matches/{id}/submit_final_standings/` endpoint. This process:
+1. Removes all live updates for the match
+2. Calculates the difference between the new standings and previous standings
+3. Creates official score entries based on these differences
+4. Updates the overall standings with the official results
+
+This approach ensures that you can provide exciting real-time updates during matches while guaranteeing data accuracy once the match concludes.
+
 ## Making HTTP Requests
 
 ### Using cURL
@@ -765,16 +856,44 @@ curl -X POST http://localhost:8000/api/tournaments/1/add_team/ \
   -H "Content-Type: application/json" \
   -d '{"team_id": 3}'
 
-# Add a score to a match
-curl -X POST http://localhost:8000/api/matches/1/add_score/ \
+# Add a live score update to a match
+curl -X POST http://localhost:8000/api/matches/1/add_live_score/ \
   -H "Content-Type: application/json" \
   -d '{
     "team": 1,
-    "position_points": "10.00",
-    "kill_points": "8.00",
-    "bonus_points": "2.00",
+    "position_points": 10,
+    "kill_points": 8,
+    "bonus_points": 2,
     "rank": 2,
     "wwcd": false
+  }'
+
+# Submit final standings for a match
+curl -X POST http://localhost:8000/api/matches/1/submit_final_standings/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "standings": [
+      {
+        "team_id": 1,
+        "position_points": 120,
+        "kill_points": 85,
+        "bonus_points": 10,
+        "total_points": 215,
+        "wwcd_count": 3,
+        "total_matches": 12,
+        "rank": 1
+      },
+      {
+        "team_id": 2,
+        "position_points": 95,
+        "kill_points": 92,
+        "bonus_points": 5,
+        "total_points": 192,
+        "wwcd_count": 2,
+        "total_matches": 12,
+        "rank": 2
+      }
+    ]
   }'
 ```
 
@@ -793,19 +912,54 @@ fetch('http://localhost:8000/api/tournaments/1/standings/')
   .then(data => console.log(data))
   .catch(error => console.error('Error:', error));
 
-// Add a score to a match
-fetch('http://localhost:8000/api/matches/3/add_score/', {
+// Add a live score update to a match
+fetch('http://localhost:8000/api/matches/3/add_live_score/', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
     "team": 2,
-    "position_points": "6.00",
-    "kill_points": "12.00",
-    "bonus_points": "0.00",
+    "position_points": 6,
+    "kill_points": 12,
+    "bonus_points": 0,
     "rank": 3,
     "wwcd": false
+  }),
+})
+  .then(response => response.json())
+  .then(data => console.log('Success:', data))
+  .catch(error => console.error('Error:', error));
+
+// Submit final standings for a match
+fetch('http://localhost:8000/api/matches/3/submit_final_standings/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    "standings": [
+      {
+        "team_id": 1,
+        "position_points": 120,
+        "kill_points": 85,
+        "bonus_points": 10,
+        "total_points": 215,
+        "wwcd_count": 3,
+        "total_matches": 12,
+        "rank": 1
+      },
+      {
+        "team_id": 2,
+        "position_points": 95,
+        "kill_points": 92,
+        "bonus_points": 5,
+        "total_points": 192,
+        "wwcd_count": 2,
+        "total_matches": 12,
+        "rank": 2
+      }
+    ]
   }),
 })
   .then(response => response.json())
@@ -829,15 +983,50 @@ response = requests.get('http://localhost:8000/api/tournaments/1/matches/')
 matches = response.json()
 print(matches)
 
-# Add a match to a schedule
-match_data = {
-    "map": "vikendi",
-    "live_link": "https://twitch.tv/match_new",
-    "status": "not_started"
+# Add a live score update to a match
+score_data = {
+    "team": 1,
+    "position_points": 10,
+    "kill_points": 8,
+    "bonus_points": 2,
+    "rank": 2,
+    "wwcd": False
 }
 response = requests.post(
-    'http://localhost:8000/api/schedules/2/add_match/',
-    data=json.dumps(match_data),
+    'http://localhost:8000/api/matches/1/add_live_score/',
+    data=json.dumps(score_data),
+    headers={'Content-Type': 'application/json'}
+)
+print(response.json())
+
+# Submit final standings for a match
+standings_data = {
+    "standings": [
+        {
+            "team_id": 1,
+            "position_points": 120,
+            "kill_points": 85,
+            "bonus_points": 10,
+            "total_points": 215,
+            "wwcd_count": 3,
+            "total_matches": 12,
+            "rank": 1
+        },
+        {
+            "team_id": 2,
+            "position_points": 95,
+            "kill_points": 92,
+            "bonus_points": 5,
+            "total_points": 192,
+            "wwcd_count": 2,
+            "total_matches": 12,
+            "rank": 2
+        }
+    ]
+}
+response = requests.post(
+    'http://localhost:8000/api/matches/1/submit_final_standings/',
+    data=json.dumps(standings_data),
     headers={'Content-Type': 'application/json'}
 )
 print(response.json())
@@ -849,4 +1038,6 @@ print(response.json())
 - All decimal fields (like points) should be sent as strings in JSON.
 - For creating related objects, use the ID of the related object.
 - When adding scores or matches through the nested endpoints, you don't need to specify the parent object ID (tournament or match) as it's taken from the URL.
+- Live score updates (`is_live_update=true`) are temporary and will be replaced when final standings are submitted.
+- Final standings submission calculates the match results by comparing with previous standings, ensuring data accuracy.
 ```

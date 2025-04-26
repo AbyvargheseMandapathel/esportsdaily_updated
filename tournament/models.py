@@ -104,19 +104,23 @@ class Match(models.Model):
 
     
 class Score(models.Model):
-    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='scores', db_index=True)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='scores', db_index=True)
-    position_points = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # Changed to Decimal
-    kill_points = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # Changed to Decimal
-    bonus_points = models.DecimalField(max_digits=5, decimal_places=2, default=0)  # Changed to Decimal
-    total_points = models.DecimalField(max_digits=7, decimal_places=2, default=0)  # Changed to Decimal
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='scores')
+    team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='scores')
+    position_points = models.IntegerField(default=0)
+    kill_points = models.IntegerField(default=0)
+    bonus_points = models.IntegerField(default=0)
+    total_points = models.IntegerField(default=0)  # Stored in DB for filtering/sorting
     rank = models.IntegerField()
-    wwcd = models.BooleanField(default=False)
-
+    wwcd = models.BooleanField(default=False)  # Winner Winner Chicken Dinner (1st place)
+    is_live_update = models.BooleanField(default=True)  # True for live updates, False for official results
+    
+    def calculate_total(self):
+        self.total_points = self.position_points + self.kill_points + self.bonus_points
+    
     def save(self, *args, **kwargs):
         self.total_points = self.position_points + self.kill_points + self.bonus_points
         super().save(*args, **kwargs)
-
+    
     def __str__(self):
         return f"{self.team.name} - {self.match} - {self.total_points} pts"
 
