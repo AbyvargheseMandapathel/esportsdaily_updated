@@ -182,14 +182,84 @@ class MatchViewSet(viewsets.ModelViewSet):
         match = self.get_object()
         tournament_id = match.tournament.id
         
-        # Process the final standings data
-        final_standings_data = request.data.get('standings', [])
-        success = process_final_standings(tournament_id, match.id, final_standings_data)
+        # Get the raw standings data
+        raw_standings_data = request.data
         
-        if success:
-            return Response({"message": "Final standings processed successfully"}, status=status.HTTP_200_OK)
+        # Check if we're receiving data with team IDs or team names
+        if raw_standings_data and 'team' in raw_standings_data[0]:
+            # Data already has team IDs, verify each team exists
+            final_standings_data = []
+            for standing in raw_standings_data:
+                team_id = standing.get('team')
+                # Verify team exists
+                try:
+                    team = Team.objects.get(pk=team_id)
+                    # Ensure team_id is an integer
+                    standing_data = {
+                        'team': int(team_id),
+                        'rank': int(standing.get('rank')),
+                        'total_matches': int(standing.get('total_matches', 1)),
+                        'wwcd_count': int(standing.get('wwcd_count', 0)),
+                        'position_points': int(standing.get('position_points', 0)),
+                        'kill_points': int(standing.get('kill_points', 0)),
+                        'total_points': int(standing.get('total_points', 0))
+                    }
+                    final_standings_data.append(standing_data)
+                    print(f"Team found: {team.name} (ID: {team_id})")
+                except Team.DoesNotExist:
+                    error_msg = f"Team with ID {team_id} does not exist"
+                    print(error_msg)
+                    return Response({"error": error_msg}, 
+                                   status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"error": "Failed to process final standings"}, status=status.HTTP_400_BAD_REQUEST)
+            # Transform the data from TeamName format to the expected format
+            final_standings_data = []
+            for standing in raw_standings_data:
+                # Get team ID from name
+                team_id = self._get_team_id_by_name(standing.get('TeamName'))
+                if not team_id:
+                    error_msg = f"Team not found: {standing.get('TeamName')}"
+                    print(error_msg)
+                    return Response({"error": error_msg}, 
+                                   status=status.HTTP_400_BAD_REQUEST)
+                
+                # Create the expected format with explicit type conversion
+                transformed_standing = {
+                    'team': int(team_id),
+                    'rank': int(standing.get('rank')),
+                    'total_matches': int(standing.get('match', 1)),
+                    'wwcd_count': 1 if standing.get('wwcd') == '1' else 0,
+                    'position_points': int(standing.get('placePoint', 0)),
+                    'kill_points': int(standing.get('totalKill', 0)),
+                    'total_points': int(standing.get('totalPoint', 0))
+                }
+                final_standings_data.append(transformed_standing)
+        
+        # print(f"Final standings data: {final_standings_data}")
+        
+        try:
+            # Process the transformed standings data
+            success = process_final_standings(tournament_id, match.id, final_standings_data)
+            
+            if not success:
+                print("Failed to process final standings")
+                return Response({"error": "Failed to process final standings"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            return Response({"message": "Final standings processed successfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            error_msg = f"Error processing final standings: {str(e)}"
+            print(error_msg)
+            return Response({"error": error_msg}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def _get_team_id_by_name(self, team_name):
+        """Helper method to get team ID by name"""
+        print(f"Looking for team name: '{team_name}'")  # <-- add this
+        try:
+            team = Team.objects.get(name=team_name)
+            return team.id
+        except Team.DoesNotExist:
+            print(f"Team not found: {team_name}")  # <-- add this
+            return None
 
 class ScheduleViewSet(viewsets.ModelViewSet):
     queryset = Schedule.objects.all()
