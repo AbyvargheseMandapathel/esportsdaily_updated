@@ -148,14 +148,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://esportsdaily-cache-exot-afdf-333484.leapcell.cloud:6379/1',  # Replace with your Redis connection details
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'PASSWORD': 'Ae00000cj4FgzvyBdPdcBOyIsZy2iszkj0gCBQcMuih5NQ6tAQc+cBVDCkdbfO3qExgrAAk',  # Provide your Redis password here if necessary
-            'SSL': True,  # Enable SSL for secure connection
-        }
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://esportsdaily-cache-exot-afdf-333484.leapcell.cloud:6379/1',  # Replace with your Redis connection details
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#             'PASSWORD': 'Ae00000cj4FgzvyBdPdcBOyIsZy2iszkj0gCBQcMuih5NQ6tAQc+cBVDCkdbfO3qExgrAAk',  # Provide your Redis password here if necessary
+#             'SSL': True,  # Enable SSL for secure connection
+#         }
+#     }
+# }
