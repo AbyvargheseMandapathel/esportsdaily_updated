@@ -1,8 +1,3 @@
-# Updating the README.md with Tournament-Specific Endpoints
-
-I'll update your README.md to include tournament-specific endpoints that allow you to access tournament details and related data through URL parameters.
-
-```markdown:c:\Users\ABY\Desktop\project\esportsdailybackend\Readme.md
 # API Documentation for Esports Daily Backend
 
 This documentation covers all API endpoints available in the Esports Daily Backend, including sample payloads and HTTP requests.
