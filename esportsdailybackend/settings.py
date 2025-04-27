@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-x_k5siue()^r82f+m4h((29__e@g5j!ri^53r6%!tl^19h#_80
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "esportsdailyapi-techinsightsdaily1980-hn7bpjy7.leapcell.dev",
+    "esportsdailyapi-production.up.railway.app",
     "localhost",
 ]
 
